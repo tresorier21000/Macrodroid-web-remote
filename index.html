@@ -1,0 +1,758 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacroDroid Web Remote</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f2fe">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --text-main: #ffffff;
+            --text-muted: #8b949e;
+            --danger: #ff4b4b;
+            --success: #00e676;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glow */
+        .ambient-glow {
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .ambient-glow-2 {
+            position: absolute;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            background: linear-gradient(to right, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+        }
+
+        .macros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .macro-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 120px;
+        }
+
+        .macro-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .macro-btn:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .macro-btn:hover::before {
+            left: 100%;
+        }
+
+        .macro-btn:active {
+            transform: translateY(0);
+        }
+
+        .macro-name-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .add-macro-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            align-items: flex-end;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        button.primary-btn {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            color: #000;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 54px;
+        }
+
+        button.primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+        
+        button.icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        button.icon-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+        }
+
+        /* Animations */
+        @keyframes pulse-click {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); border-color: var(--primary); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(0, 242, 254, 0); border-color: var(--primary); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+        }
+
+        .macro-btn.clicking {
+            animation: pulse-click 0.4s ease-out;
+        }
+        
+        @keyframes flash-grid {
+            0% { background-color: rgba(0, 230, 118, 0.2); }
+            100% { background-color: transparent; }
+        }
+        .macros-grid.flash {
+            animation: flash-grid 1s ease-out;
+            border-radius: 16px;
+        }
+
+        /* Edit and Delete Buttons */
+        .btn-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .macro-btn:hover .btn-controls {
+            opacity: 1;
+        }
+
+        .floating-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .edit-btn { color: var(--text-main); }
+        .edit-btn:hover { background: var(--secondary); color: #000; }
+
+        .delete-btn { color: var(--danger); }
+        .delete-btn:hover { background: var(--danger); color: white; }
+
+        /* Notification Styling */
+        #notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+        #notification.show {
+            transform: translateY(0);
+        }
+        
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .help-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        /* Tooltip Styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            cursor: help;
+        }
+
+        .tooltip-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .tooltip-container:hover .tooltip-icon {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            background: rgba(13, 15, 18, 0.95);
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 1rem;
+            position: absolute;
+            z-index: 100;
+            bottom: 150%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            width: max-content;
+            max-width: 300px;
+            border: 1px solid var(--primary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--primary) transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .add-macro-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            button.primary-btn {
+                width: 100%;
+            }
+            .tooltip-text {
+                left: -100px;
+                transform: none;
+            }
+            .tooltip-text::after {
+                left: 110px;
+            }
+            .flex-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .macro-btn .btn-controls {
+                opacity: 1; /* Always show on mobile since no hover */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
+
+    <div class="container">
+        <header>
+            <h1>MacroDroid Web</h1>
+            <p>Contrôlez votre téléphone depuis votre navigateur</p>
+        </header>
+
+        <!-- Configuration Panel -->
+        <div class="glass-panel">
+            <div class="settings-group">
+                <label for="deviceId" style="display:flex; align-items:center;">
+                    🤖 Identifiant de l'appareil (Device ID)
+                    <div class="tooltip-container">
+                        <span class="tooltip-icon">?</span>
+                        <div class="tooltip-text">
+                            <strong>L'identifiant unique de votre téléphone.</strong><br><br>
+                            Il ne change jamais. C'est la suite de lettres et chiffres qui suit "trigger.macrodroid.com/..."<br><br>
+                            <em>Ex: f5774985-2ba7-432e-af04-2737dd98d8dd</em>
+                        </div>
+                    </div>
+                </label>
+                <input type="text" id="deviceId" placeholder="ex: 12ab34cd-56ef-78gh-90ij" />
+                <p class="help-text">
+                    Trouvez-le sur votre téléphone dans <strong>MacroDroid > Déclencheurs > Connectivité > Webhook (URL)</strong>.<br>
+                </p>
+            </div>
+        </div>
+
+        <!-- Macros Panel -->
+        <div class="glass-panel">
+            <div class="flex-row" style="margin-bottom: 2rem;">
+                <label style="font-size: 1.2rem; color: var(--text-main);">⚡ Vos Boutons d'Action</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="tooltip-container" style="margin: 0 0.5rem 0 0;">
+                        <span class="tooltip-icon">?</span>
+                        <div class="tooltip-text" style="width: 280px; left: 50%; bottom: 140%;">
+                            <strong>Sauvegarde (Export/Import)</strong><br><br>
+                            Exportez vos boutons configurés dans un petit fichier pour pouvoir les restaurer (Importer) plus tard si vous videz le cache du navigateur.<br><br>
+                            <em>Sécurité : votre Device ID n'est absolument pas inclus dans ce fichier.</em>
+                        </div>
+                    </div>
+                    <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Importer des macros">📥 Importer</button>
+                    <button class="icon-btn" onclick="exportMacros()" title="Exporter les macros en fichier">📤 Exporter</button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importMacros(event)" />
+                </div>
+            </div>
+            
+            <div class="macros-grid" id="macrosGrid">
+                <!-- Les boutons seront générés ici par JS -->
+            </div>
+
+            <form class="add-macro-form" id="addMacroForm">
+                <input type="hidden" id="editMacroId" value="">
+                <div class="input-group">
+                    <label for="newBtnLabel">Nom du bouton</label>
+                    <input type="text" id="newBtnLabel" placeholder="ex: Faire Sonner" required />
+                </div>
+                <div class="input-group">
+                    <label for="newMacroName" style="display:flex; align-items:center;">
+                        Identifiant du Webhook
+                        <div class="tooltip-container">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-text">
+                                <strong>L'identifiant spécifique à la macro que vous voulez lancer.</strong><br><br>
+                                C'est la fin du lien affiché dans MacroDroid au moment où vous ajoutez le déclencheur Webhook.<br><br>
+                                <em>Ex: test_photo, faire_sonner, etc.</em>
+                            </div>
+                        </div>
+                    </label>
+                    <input type="text" id="newMacroName" placeholder="ex: test_macro" required />
+                </div>
+                <button type="submit" class="primary-btn" id="submitBtn">➕ Ajouter</button>
+            </form>
+        </div>
+
+        <!-- Pied de page -->
+        <footer style="text-align: center; margin-top: 1rem; margin-bottom: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            MacroDroid Web Remote v1.0.0<br>
+            Créé par Yves Balestra - <a href="mailto:yves.balestra@gmail.com" style="color: var(--primary); text-decoration: none; transition: color 0.3s;">yves.balestra@gmail.com</a>
+        </footer>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        const deviceIdInput = document.getElementById('deviceId');
+        const macrosGrid = document.getElementById('macrosGrid');
+        const addMacroForm = document.getElementById('addMacroForm');
+        const notification = document.getElementById('notification');
+        
+        const editMacroIdInput = document.getElementById('editMacroId');
+        const submitBtn = document.getElementById('submitBtn');
+        const inputBtnLabel = document.getElementById('newBtnLabel');
+        const inputMacroName = document.getElementById('newMacroName');
+
+        // Initial default state
+        let macros = JSON.parse(localStorage.getItem('md_macros')) || [
+            { id: 1, label: '🔦 Allumer Torche', name: 'torche_on' },
+            { id: 2, label: '📱 Trouver Téléphone', name: 'trouver_tel' }
+        ];
+
+        // Load Device ID
+        deviceIdInput.value = localStorage.getItem('md_deviceId') || '';
+
+        // Save Device ID on change
+        deviceIdInput.addEventListener('input', (e) => {
+            localStorage.setItem('md_deviceId', e.target.value.trim());
+        });
+
+        // Trigger Macro
+        function triggerMacro(macroName, btnElement) {
+            let deviceId = deviceIdInput.value.trim();
+            if (!deviceId) {
+                showNotification('Erreur : Veuillez entrer votre Device ID.', 'danger');
+                deviceIdInput.focus();
+                return;
+            }
+            
+            // Animation visuelle tactile/click
+            if(btnElement) {
+                btnElement.classList.add('clicking');
+                setTimeout(() => {
+                    btnElement.classList.remove('clicking');
+                }, 400); // Durée correspondante au css pulse-click
+            }
+
+            // Nettoyage au cas où l'utilisateur aurait collé l'URL complète
+            if (deviceId.startsWith('http')) {
+                const match = deviceId.match(/trigger\.macrodroid\.com\/(.+)/);
+                if (match && match[1]) {
+                    deviceId = match[1];
+                }
+            }
+
+            // Évite de faire /ID/macroName/macroName si l'utilisateur a déjà inclus le nom de la macro dans le champ ID
+            let url = '';
+            if (deviceId.includes('/')) {
+                const idPart = deviceId.split('/')[0];
+                url = `https://trigger.macrodroid.com/${idPart}/${encodeURIComponent(macroName)}`;
+            } else {
+                url = `https://trigger.macrodroid.com/${deviceId}/${encodeURIComponent(macroName)}`;
+            }
+            
+            // On utilise fetch() en mode "no-cors" (opaque) 
+            // pour envoyer la requête silencieusement en arrière-plan
+            try {
+                fetch(url, { mode: 'no-cors' });
+                showNotification(`Signal "${macroName}" envoyé en silencieux !`, 'success');
+            } catch (err) {
+                console.error(err);
+                showNotification(`Erreur d'envoi pour "${macroName}".`, 'danger');
+            }
+        }
+
+        // Render macros to DOM
+        function renderMacros() {
+            macrosGrid.innerHTML = '';
+            macros.forEach(macro => {
+                const btn = document.createElement('div');
+                btn.className = 'macro-btn';
+                btn.innerHTML = `
+                    <div class="btn-controls">
+                        <button class="floating-btn edit-btn" title="Modifier" onclick="editMacro(event, ${macro.id})">✏️</button>
+                        <button class="floating-btn delete-btn" title="Supprimer" onclick="deleteMacro(event, ${macro.id})">✕</button>
+                    </div>
+                    <span>${macro.label}</span>
+                    <span class="macro-name-label">ID: ${macro.name}</span>
+                `;
+                btn.onclick = () => triggerMacro(macro.name, btn);
+                macrosGrid.appendChild(btn);
+            });
+        }
+
+        // Edit Macro (Load into form)
+        window.editMacro = function(event, id) {
+            event.stopPropagation(); // Prevent macro trigger
+            const macroToEdit = macros.find(m => m.id === id);
+            if (macroToEdit) {
+                editMacroIdInput.value = macroToEdit.id;
+                inputBtnLabel.value = macroToEdit.label;
+                inputMacroName.value = macroToEdit.name;
+                
+                // Change UI of the Add button to show it's editing
+                submitBtn.innerHTML = '💾 Enregistrer la modif.';
+                submitBtn.style.background = 'linear-gradient(135deg, var(--success), #00b35c)';
+                
+                inputBtnLabel.focus();
+            }
+        }
+
+        // Add or Update Macro
+        addMacroForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const label = inputBtnLabel.value.trim();
+            const name = inputMacroName.value.trim();
+            const editingId = editMacroIdInput.value;
+
+            if (label && name) {
+                if (editingId) {
+                    // Update existing
+                    const index = macros.findIndex(m => m.id == editingId);
+                    if (index !== -1) {
+                        macros[index].label = label;
+                        macros[index].name = name;
+                        showNotification('Bouton modifié avec succès !', 'success');
+                    }
+                } else {
+                    // Add new
+                    macros.push({ id: Date.now(), label, name });
+                    showNotification('Nouveau bouton ajouté !', 'success');
+                }
+                
+                localStorage.setItem('md_macros', JSON.stringify(macros));
+                renderMacros();
+                
+                // Reset Form
+                addMacroForm.reset();
+                editMacroIdInput.value = '';
+                submitBtn.innerHTML = '➕ Ajouter';
+                submitBtn.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+            }
+        });
+
+        // Delete Macro
+        window.deleteMacro = function(event, id) {
+            event.stopPropagation(); // Preven trigger
+            if(confirm('Supprimer définitivement ce bouton ?')) {
+                macros = macros.filter(m => m.id !== id);
+                localStorage.setItem('md_macros', JSON.stringify(macros));
+                renderMacros();
+                showNotification('Bouton supprimé.', 'success');
+                
+                // Also reset form if user was editing the deleted macro
+                if(editMacroIdInput.value == id) {
+                    addMacroForm.reset();
+                    editMacroIdInput.value = '';
+                    submitBtn.innerHTML = '➕ Ajouter';
+                    submitBtn.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+                }
+            }
+        }
+        
+        // Exporter
+        function exportMacros() {
+            if (macros.length === 0) {
+                showNotification('Aucune macro à exporter.', 'danger');
+                return;
+            }
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(macros, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute('href', dataStr);
+            downloadAnchorNode.setAttribute('download', 'macrodroid_boutons_sauvegarde.json');
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            showNotification('Fichier téléchargé avec succès !', 'success');
+        }
+
+        // Importer
+        function importMacros(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(imported)) {
+                        macros = imported;
+                        localStorage.setItem('md_macros', JSON.stringify(macros));
+                        renderMacros();
+                        
+                        // Animation visuelle de la grille
+                        macrosGrid.classList.remove('flash');
+                        void macrosGrid.offsetWidth; // Force reflow
+                        macrosGrid.classList.add('flash');
+                        
+                        showNotification(`Succès : ${imported.length} boutons importés !`, 'success');
+                    } else {
+                        showNotification('Format de fichier invalide.', 'danger');
+                    }
+                } catch(err) {
+                    showNotification('Erreur de lecture du fichier.', 'danger');
+                }
+                
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // Show toast notification
+        function showNotification(msg, type) {
+            notification.textContent = msg;
+            notification.style.borderColor = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            notification.style.color = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialization
+        renderMacros();
+        
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

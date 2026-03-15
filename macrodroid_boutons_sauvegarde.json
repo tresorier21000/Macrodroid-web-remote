@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "label": "🔦 Allumer Torche",
+    "name": "torche_on"
+  },
+  {
+    "id": 2,
+    "label": "📱 Trouver Téléphone",
+    "name": "trouver_tel"
+  },
+  {
+    "id": 1773568936242,
+    "label": "photo",
+    "name": "test_macro"
+  }
+]
