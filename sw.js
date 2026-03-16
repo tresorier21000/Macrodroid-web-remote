@@ -1,5 +1,5 @@
 // Nom du cache
-const CACHE_NAME = 'md-remote-cache-v1';
+const CACHE_NAME = 'md-remote-cache-v2.2.1';
 const urlsToCache = [
   './',
   './index.html',

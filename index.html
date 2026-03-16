@@ -405,6 +405,102 @@
             opacity: 1;
         }
 
+        /* Accordion Structure */
+        details.glass-panel {
+            padding: 1.5rem 2.5rem;
+        }
+        
+        details.glass-panel[open] {
+            padding-bottom: 2.5rem;
+        }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '▾';
+            font-size: 1.5rem;
+            color: var(--primary);
+            transition: transform 0.3s;
+        }
+        
+        details[open] summary::after {
+            transform: rotate(-180deg);
+        }
+        
+        .accordion-content {
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Devices List Styles */
+        .devices-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            transition: border-color 0.2s;
+        }
+
+        .device-item:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .device-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .device-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        .device-id-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .add-macro-form {
@@ -442,77 +538,161 @@
             <p>Contrôlez votre téléphone depuis votre navigateur</p>
         </header>
 
-        <!-- Configuration Panel -->
-        <div class="glass-panel">
-            <div class="settings-group">
-                <label for="deviceId" style="display:flex; align-items:center;">
-                    🤖 Identifiant de l'appareil (Device ID)
-                    <div class="tooltip-container">
-                        <span class="tooltip-icon">?</span>
-                        <div class="tooltip-text">
-                            <strong>L'identifiant unique de votre téléphone.</strong><br><br>
-                            Il ne change jamais. C'est la suite de lettres et chiffres qui suit "trigger.macrodroid.com/..."<br><br>
-                            <em>Ex: f5774985-2ba7-432e-af04-2737dd98d8dd</em>
+        <!-- Appareils Panel (Accordéon) -->
+        <details class="glass-panel" id="devicesDetails">
+            <summary>
+                <div class="flex-row" style="flex: 1; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label style="font-size: 1.2rem; color: var(--text-main); cursor:pointer; margin: 0;">📱 Sélectionner / Modifier vos appareils</label>
+                        <div class="tooltip-container" style="margin: 0;">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-text" style="width: 250px; z-index: 10;">
+                                <strong>Appareils cibles</strong><br><br>
+                                Les macros déclenchées seront envoyées simultanément à <strong>tous</strong> les téléphones cochés.
+                            </div>
                         </div>
                     </div>
-                </label>
-                <input type="text" id="deviceId" placeholder="ex: 12ab34cd-56ef-78gh-90ij" />
-                <p class="help-text">
-                    Trouvez-le sur votre téléphone dans <strong>MacroDroid > Déclencheurs > Connectivité > Webhook (URL)</strong>.<br>
-                </p>
-            </div>
-        </div>
+                </div>
+            </summary>
+            
+            <div class="accordion-content">
+                <div class="flex-row" style="margin-bottom: 1.5rem; justify-content: flex-end;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button class="icon-btn" onclick="document.getElementById('devicesFileInput').click()" title="Importer la liste des téléphones">📥 Importer</button>
+                        <button class="icon-btn" style="color: var(--danger); border-color: rgba(255, 75, 75, 0.3);" onclick="exportDevices()" title="Exporter les téléphones (Sensible !)">📤 Exporter</button>
+                        <input type="file" id="devicesFileInput" accept=".json" style="display: none;" onchange="importDevices(event)" />
+                        <div class="tooltip-container" style="margin: 0;">
+                            <span class="tooltip-icon" style="color: var(--danger); border-color: var(--danger);">!</span>
+                            <div class="tooltip-text" style="width: 280px; left: auto; right: 0; transform: none; bottom: 140%;">
+                                <strong style="color: var(--danger);">Alerte de Sécurité</strong><br><br>
+                                Contrairement à l'export des macros, l'export des Appareils <strong>contient vos Device IDs secrets</strong>.<br><br>
+                                <em>Garder ce fichier en lieu sûr et ne le partagez jamais. Privilégiez des noms de macros complexes pour plus de sécurité.</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Macros Panel -->
-        <div class="glass-panel">
-            <div class="flex-row" style="margin-bottom: 2rem;">
-                <label style="font-size: 1.2rem; color: var(--text-main);">⚡ Vos Boutons d'Action</label>
+                <div class="devices-list" id="devicesGrid">
+                    <!-- Appareils générés via JS -->
+                </div>
+
+                <form class="add-macro-form" id="addDeviceForm" style="margin-top: 1.5rem; padding-top: 1.5rem;">
+                    <input type="hidden" id="editDeviceId" value="">
+                    <div class="input-group">
+                        <label for="newDeviceName">Nom du téléphone</label>
+                        <input type="text" id="newDeviceName" placeholder="ex: Tél Yves" required />
+                    </div>
+                    <div class="input-group">
+                        <label for="newDeviceId" style="display:flex; align-items:center;">
+                            Device ID
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-text">
+                                    <strong>L'identifiant unique.</strong><br><br>
+                                    Suite de lettres/chiffres dans votre URL Webhook.<br>
+                                    <em>Ex: f577498...</em>
+                                </div>
+                            </div>
+                        </label>
+                        <input type="text" id="newDeviceId" placeholder="ex: 12ab34cd-56ef..." required />
+                    </div>
+                    <button type="submit" class="primary-btn" id="submitDeviceBtn">➕ Ajouter</button>
+                </form>
+            </div>
+        </details>
+
+        <!-- Macros Panel (Favoris) -->
+        <div class="glass-panel" id="favoritesPanel">
+            <div class="flex-row" style="margin-bottom: 1.5rem; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div class="tooltip-container" style="margin: 0 0.5rem 0 0;">
+                    <label style="font-size: 1.2rem; color: var(--text-main); margin: 0;">⭐ Vos Boutons Favoris</label>
+                    <div class="tooltip-container" style="margin: 0;">
                         <span class="tooltip-icon">?</span>
-                        <div class="tooltip-text" style="width: 280px; left: 50%; bottom: 140%;">
-                            <strong>Sauvegarde (Export/Import)</strong><br><br>
-                            Exportez vos boutons configurés dans un petit fichier pour pouvoir les restaurer (Importer) plus tard si vous videz le cache du navigateur.<br><br>
-                            <em>Sécurité : votre Device ID n'est absolument pas inclus dans ce fichier.</em>
+                        <div class="tooltip-text" style="width: 250px; z-index: 10;">
+                            <strong>Accès rapide</strong><br><br>
+                            Vos boutons les plus utilisés (3 maximum).<br>
+                            <em>Cliquez sur l'étoile (⭐ ou ☆) d'une macro pour l'ajouter ou la retirer d'ici.</em>
                         </div>
                     </div>
-                    <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Importer des macros">📥 Importer</button>
-                    <button class="icon-btn" onclick="exportMacros()" title="Exporter les macros en fichier">📤 Exporter</button>
-                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importMacros(event)" />
                 </div>
             </div>
             
-            <div class="macros-grid" id="macrosGrid">
-                <!-- Les boutons seront générés ici par JS -->
+            <div class="macros-grid" id="favoritesGrid">
+                <!-- Macros favorites générées par JS -->
             </div>
+            <p id="noFavoritesMsg" class="help-text" style="text-align:center; display:none;">Aucun favori sélectionné.</p>
+        </div>
 
-            <form class="add-macro-form" id="addMacroForm">
-                <input type="hidden" id="editMacroId" value="">
-                <div class="input-group">
-                    <label for="newBtnLabel">Nom du bouton</label>
-                    <input type="text" id="newBtnLabel" placeholder="ex: Faire Sonner" required />
-                </div>
-                <div class="input-group">
-                    <label for="newMacroName" style="display:flex; align-items:center;">
-                        Identifiant du Webhook
-                        <div class="tooltip-container">
+        <!-- Toutes les Macros Panel (Accordéon) -->
+        <details class="glass-panel" id="allMacrosDetails">
+            <summary>
+                <div class="flex-row" style="flex: 1; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label style="font-size: 1.2rem; color: var(--text-main); cursor:pointer; margin: 0;">⚙️ Sélectionner / Modifier toutes les macros</label>
+                        <div class="tooltip-container" style="margin: 0;">
                             <span class="tooltip-icon">?</span>
-                            <div class="tooltip-text">
-                                <strong>L'identifiant spécifique à la macro que vous voulez lancer.</strong><br><br>
-                                C'est la fin du lien affiché dans MacroDroid au moment où vous ajoutez le déclencheur Webhook.<br><br>
-                                <em>Ex: test_photo, faire_sonner, etc.</em>
+                            <div class="tooltip-text" style="width: 280px; z-index: 10;">
+                                <strong>Toutes vos macros</strong><br><br>
+                                C'est ici que vous pouvez créer, modifier ou supprimer <strong>tous</strong> vos boutons, ainsi que choisir vos favoris (☆).
                             </div>
                         </div>
-                    </label>
-                    <input type="text" id="newMacroName" placeholder="ex: test_macro" required />
+                    </div>
                 </div>
-                <button type="submit" class="primary-btn" id="submitBtn">➕ Ajouter</button>
-            </form>
-        </div>
+            </summary>
+            
+            <div class="accordion-content">
+                <div class="flex-row" style="margin-bottom: 1.5rem; justify-content: flex-end;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Restaurer les boutons">📥 Importer</button>
+                        <button class="icon-btn" onclick="exportMacros()" title="Sauvegarder les boutons">📤 Exporter</button>
+                        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importMacros(event)" />
+                        <div class="tooltip-container" style="margin: 0;">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-text" style="width: 250px; left: auto; right: 0; transform: none; bottom: 140%;">
+                                <strong>Import / Export des macros</strong><br><br>
+                                Ces fichiers ne contiennent pas vos Device IDs. Ils ne contiennent que vos étiquettes de boutons et noms de webhook.<br>
+                                <em>Utile pour partager votre interface !</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="macros-grid" id="allMacrosGrid">
+                    <!-- Toutes les Macros générées par JS -->
+                </div>
+
+                <form class="add-macro-form" id="addMacroForm" style="margin-top: 1.5rem; padding-top: 1.5rem;">
+                    <input type="hidden" id="editMacroId" value="">
+                    <div class="input-group">
+                        <label for="newBtnLabel">Nom du bouton</label>
+                        <input type="text" id="newBtnLabel" placeholder="ex: Faire Sonner" required />
+                    </div>
+                    <div class="input-group">
+                        <label for="newMacroName" style="display:flex; align-items:center;">
+                            Identifiant du Webhook
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-text">
+                                    <strong>Le nom exact configuré dans MacroDroid.</strong><br><br>
+                                    C'est la dernière partie de l'URL Webhook, appelée "identifier".<br>
+                                    <em>Ex: test_photo, faire_sonner...</em>
+                                </div>
+                            </div>
+                        </label>
+                        <input type="text" id="newMacroName" placeholder="ex: test_macro" required />
+                    </div>
+                    <div class="input-group" style="flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px;">
+                        <input type="checkbox" id="newIsFavorite" class="device-checkbox">
+                        <label for="newIsFavorite" style="margin: 0; cursor: pointer;">Définir comme Favori (⭐/☆ Maxi 3)</label>
+                    </div>
+                    <button type="submit" class="primary-btn" id="submitBtn">➕ Ajouter</button>
+                </form>
+            </div>
+        </details>
 
         <!-- Pied de page -->
         <footer style="text-align: center; margin-top: 1rem; margin-bottom: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-            MacroDroid Web Remote v1.0.0<br>
+            MacroDroid Web Remote v2.2.1<br>
             Créé par Yves Balestra - <a href="mailto:yves.balestra@gmail.com" style="color: var(--primary); text-decoration: none; transition: color 0.3s;">yves.balestra@gmail.com</a>
         </footer>
     </div>
@@ -520,36 +700,223 @@
     <div id="notification"></div>
 
     <script>
-        const deviceIdInput = document.getElementById('deviceId');
-        const macrosGrid = document.getElementById('macrosGrid');
-        const addMacroForm = document.getElementById('addMacroForm');
         const notification = document.getElementById('notification');
+        
+        const devicesGrid = document.getElementById('devicesGrid');
+        const addDeviceForm = document.getElementById('addDeviceForm');
+        const editDeviceIdInput = document.getElementById('editDeviceId');
+        const submitDeviceBtn = document.getElementById('submitDeviceBtn');
+        const devicesDetails = document.getElementById('devicesDetails');
+        
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const allMacrosGrid = document.getElementById('allMacrosGrid');
+        const noFavoritesMsg = document.getElementById('noFavoritesMsg');
+        
+        const addMacroForm = document.getElementById('addMacroForm');
         
         const editMacroIdInput = document.getElementById('editMacroId');
         const submitBtn = document.getElementById('submitBtn');
         const inputBtnLabel = document.getElementById('newBtnLabel');
         const inputMacroName = document.getElementById('newMacroName');
+        const inputIsFavorite = document.getElementById('newIsFavorite');
 
         // Initial default state
         let macros = JSON.parse(localStorage.getItem('md_macros')) || [
-            { id: 1, label: '🔦 Allumer Torche', name: 'torche_on' },
-            { id: 2, label: '📱 Trouver Téléphone', name: 'trouver_tel' }
+            { id: 1, label: '🔦 Allumer Torche', name: 'torche_on', isFavorite: true },
+            { id: 2, label: '📱 Trouver Téléphone', name: 'trouver_tel', isFavorite: true }
         ];
 
-        // Load Device ID
-        deviceIdInput.value = localStorage.getItem('md_deviceId') || '';
+        let devices = JSON.parse(localStorage.getItem('md_devices')) || [];
 
-        // Save Device ID on change
-        deviceIdInput.addEventListener('input', (e) => {
-            localStorage.setItem('md_deviceId', e.target.value.trim());
+        // Migration V1 -> V2 (Auto-conversion de l'ancien Device ID unique)
+        const legacyDeviceId = localStorage.getItem('md_deviceId');
+        if(legacyDeviceId && devices.length === 0) {
+            let cleanId = legacyDeviceId.trim();
+            if (cleanId.startsWith('http')) {
+                const match = cleanId.match(/trigger\.macrodroid\.com\/(.+)/);
+                if (match && match[1]) { cleanId = match[1]; }
+            }
+            if (cleanId.includes('/')) {
+                cleanId = cleanId.split('/')[0];
+            }
+            devices.push({ id: Date.now(), name: 'Mon Téléphone', deviceId: cleanId, selected: true });
+            localStorage.setItem('md_devices', JSON.stringify(devices));
+            localStorage.removeItem('md_deviceId');
+        }
+
+        // --- GESTION DES APPAREILS ---
+
+        function renderDevices() {
+            devicesGrid.innerHTML = '';
+            if(devices.length === 0) {
+                devicesGrid.innerHTML = '<p class="help-text" style="text-align:center;">Aucun appareil enregistré. Ajoutez-en un ci-dessous !</p>';
+                return;
+            }
+            
+            devices.forEach(device => {
+                const div = document.createElement('div');
+                div.className = 'device-item';
+                div.innerHTML = `
+                    <div class="device-info">
+                        <input type="checkbox" class="device-checkbox" ${device.selected ? 'checked' : ''} onchange="toggleDevice(${device.id}, this.checked)" title="Cocher pour envoyer à ce téléphone">
+                        <div class="device-details">
+                            <span class="device-name">${device.name}</span>
+                            <span class="device-id-text">${device.deviceId}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap: 5px;">
+                        <button class="floating-btn edit-btn" title="Modifier" onclick="editDevice(event, ${device.id})">✏️</button>
+                        <button class="floating-btn delete-btn" title="Supprimer" onclick="deleteDevice(event, ${device.id})">✕</button>
+                    </div>
+                `;
+                devicesGrid.appendChild(div);
+            });
+        }
+
+        window.editDevice = function(event, id) {
+            event.stopPropagation();
+            const deviceToEdit = devices.find(d => d.id === id);
+            if (deviceToEdit) {
+                editDeviceIdInput.value = deviceToEdit.id;
+                document.getElementById('newDeviceName').value = deviceToEdit.name;
+                document.getElementById('newDeviceId').value = deviceToEdit.deviceId;
+                
+                submitDeviceBtn.innerHTML = '💾 Mettre à jour';
+                submitDeviceBtn.style.background = 'linear-gradient(135deg, var(--success), #00b35c)';
+                document.getElementById('newDeviceName').focus();
+            }
+        }
+
+        window.toggleDevice = function(id, isChecked) {
+            const index = devices.findIndex(d => d.id === id);
+            if(index !== -1) {
+                devices[index].selected = isChecked;
+                localStorage.setItem('md_devices', JSON.stringify(devices));
+            }
+        }
+
+        addDeviceForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newDeviceName').value.trim();
+            const deviceId = document.getElementById('newDeviceId').value.trim();
+            const editingId = editDeviceIdInput.value;
+
+            if (name && deviceId) {
+                let cleanId = deviceId;
+                if (cleanId.startsWith('http')) {
+                    const match = cleanId.match(/trigger\.macrodroid\.com\/(.+)/);
+                    if (match && match[1]) { cleanId = match[1]; }
+                }
+                if (cleanId.includes('/')) {
+                    cleanId = cleanId.split('/')[0];
+                }
+
+                if (editingId) {
+                    const index = devices.findIndex(d => d.id == editingId);
+                    if (index !== -1) {
+                        devices[index].name = name;
+                        devices[index].deviceId = cleanId;
+                        showNotification('Téléphone modifié avec succès !', 'success');
+                    }
+                } else {
+                    devices.push({ id: Date.now(), name, deviceId: cleanId, selected: true });
+                    showNotification('Téléphone ajouté avec succès !', 'success');
+                }
+
+                localStorage.setItem('md_devices', JSON.stringify(devices));
+                renderDevices();
+                
+                addDeviceForm.reset();
+                editDeviceIdInput.value = '';
+                submitDeviceBtn.innerHTML = '➕ Ajouter';
+                submitDeviceBtn.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+            }
         });
+
+        window.deleteDevice = function(event, id) {
+            event.stopPropagation();
+            if(confirm('Retirer ce téléphone de la liste ?')) {
+                devices = devices.filter(d => d.id !== id);
+                localStorage.setItem('md_devices', JSON.stringify(devices));
+                renderDevices();
+                showNotification('Téléphone supprimé.', 'success');
+                
+                if(editDeviceIdInput.value == id) {
+                    addDeviceForm.reset();
+                    editDeviceIdInput.value = '';
+                    submitDeviceBtn.innerHTML = '➕ Ajouter';
+                    submitDeviceBtn.style.background = 'linear-gradient(135deg, var(--secondary), var(--primary))';
+                }
+            }
+        }
+        
+        function exportDevices() {
+            if (devices.length === 0) {
+                showNotification('Aucun téléphone à exporter.', 'danger');
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(devices, null, 2));
+            const downloadNode = document.createElement('a');
+            downloadNode.setAttribute('href', dataStr);
+            downloadNode.setAttribute('download', 'macrodroid_telephones_sauvegarde.json');
+            document.body.appendChild(downloadNode);
+            downloadNode.click();
+            downloadNode.remove();
+            showNotification('Fichier Appareils SENSIBLE téléchargé !', 'success');
+        }
+
+        function importDevices(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        // Anti-inversion : Vérifier s'il s'agit bien de téléphones (présence de deviceId)
+                        if (imported.length > 0 && !imported[0].hasOwnProperty('deviceId')) {
+                            showNotification('Erreur : Fichier incompatible (Ce n\'est pas un fichier Téléphones).', 'danger');
+                            return;
+                        }
+                        devices = imported;
+                        localStorage.setItem('md_devices', JSON.stringify(devices));
+                        renderDevices();
+                        showNotification('Téléphones importés !', 'success');
+                    } else { showNotification('Fichier invalide.', 'danger'); }
+                } catch(err) { showNotification('Erreur de lecture.', 'danger'); }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // --- GESTION DES MACROS ---
+
+        // Création d'un bouton Macro DOM
+        function createMacroElement(macro) {
+            const btn = document.createElement('div');
+            btn.className = 'macro-btn';
+            
+            const favClass = macro.isFavorite ? 'active' : 'inactive';
+            const favIcon = macro.isFavorite ? '⭐' : '☆';
+            
+            btn.innerHTML = `
+                <div class="favorite-icon ${favClass}" title="Ajouter/Retirer des favoris" onclick="toggleFavorite(event, ${macro.id})">${favIcon}</div>
+                <div class="btn-controls">
+                    <button class="floating-btn edit-btn" title="Modifier" onclick="editMacro(event, ${macro.id})">✏️</button>
+                    <button class="floating-btn delete-btn" title="Supprimer" onclick="deleteMacro(event, ${macro.id})">✕</button>
+                </div>
+                <span>${macro.label}</span>
+                <span class="macro-name-label">ID: ${macro.name}</span>
+            `;
+            btn.onclick = () => triggerMacro(macro.name, btn);
+            return btn;
+        }
 
         // Trigger Macro
         function triggerMacro(macroName, btnElement) {
-            let deviceId = deviceIdInput.value.trim();
-            if (!deviceId) {
-                showNotification('Erreur : Veuillez entrer votre Device ID.', 'danger');
-                deviceIdInput.focus();
+            const selectedDevices = devices.filter(d => d.selected);
+            if (selectedDevices.length === 0) {
+                showNotification('Erreur : Sélectionnez au moins un appareil en haut.', 'danger');
                 return;
             }
             
@@ -561,51 +928,75 @@
                 }, 400); // Durée correspondante au css pulse-click
             }
 
-            // Nettoyage au cas où l'utilisateur aurait collé l'URL complète
-            if (deviceId.startsWith('http')) {
-                const match = deviceId.match(/trigger\.macrodroid\.com\/(.+)/);
-                if (match && match[1]) {
-                    deviceId = match[1];
-                }
-            }
+            let successCount = 0;
+            let errorCount = 0;
+            const promises = [];
 
-            // Évite de faire /ID/macroName/macroName si l'utilisateur a déjà inclus le nom de la macro dans le champ ID
-            let url = '';
-            if (deviceId.includes('/')) {
-                const idPart = deviceId.split('/')[0];
-                url = `https://trigger.macrodroid.com/${idPart}/${encodeURIComponent(macroName)}`;
-            } else {
-                url = `https://trigger.macrodroid.com/${deviceId}/${encodeURIComponent(macroName)}`;
-            }
-            
-            // On utilise fetch() en mode "no-cors" (opaque) 
-            // pour envoyer la requête silencieusement en arrière-plan
-            try {
-                fetch(url, { mode: 'no-cors' });
-                showNotification(`Signal "${macroName}" envoyé en silencieux !`, 'success');
-            } catch (err) {
-                console.error(err);
-                showNotification(`Erreur d'envoi pour "${macroName}".`, 'danger');
+            selectedDevices.forEach(device => {
+                const url = `https://trigger.macrodroid.com/${device.deviceId}/${encodeURIComponent(macroName)}`;
+                const p = fetch(url, { mode: 'no-cors' })
+                    .then(() => { successCount++; })
+                    .catch(err => {
+                        console.error("Erreur pour l'appareil " + device.name, err);
+                        errorCount++;
+                    });
+                promises.push(p);
+            });
+
+            Promise.all(promises).then(() => {
+                if(errorCount > 0) {
+                    showNotification(`Envoyé avec ${errorCount} erreur(s) sur ${selectedDevices.length} appareils.`, 'danger');
+                } else {
+                    showNotification(`Signal envoyé à ${successCount} appareil(s) !`, 'success');
+                }
+            });
+        }
+
+        // Toggle Favorite
+        window.toggleFavorite = function(event, id) {
+            event.stopPropagation();
+            const index = macros.findIndex(m => m.id === id);
+            if(index !== -1) {
+                const isCurrentlyFav = macros[index].isFavorite;
+                
+                // Vérification de la limite de 3 avant de l'ajouter
+                if(!isCurrentlyFav) {
+                    const currentFavCount = macros.filter(m => m.isFavorite).length;
+                    if(currentFavCount >= 3) {
+                        showNotification('Vous aver atteint la limite de 3 favoris.', 'danger');
+                        return;
+                    }
+                }
+                
+                macros[index].isFavorite = !isCurrentlyFav;
+                localStorage.setItem('md_macros', JSON.stringify(macros));
+                renderMacros();
             }
         }
 
         // Render macros to DOM
         function renderMacros() {
-            macrosGrid.innerHTML = '';
+            favoritesGrid.innerHTML = '';
+            allMacrosGrid.innerHTML = '';
+            
+            let favoritesCount = 0;
+
             macros.forEach(macro => {
-                const btn = document.createElement('div');
-                btn.className = 'macro-btn';
-                btn.innerHTML = `
-                    <div class="btn-controls">
-                        <button class="floating-btn edit-btn" title="Modifier" onclick="editMacro(event, ${macro.id})">✏️</button>
-                        <button class="floating-btn delete-btn" title="Supprimer" onclick="deleteMacro(event, ${macro.id})">✕</button>
-                    </div>
-                    <span>${macro.label}</span>
-                    <span class="macro-name-label">ID: ${macro.name}</span>
-                `;
-                btn.onclick = () => triggerMacro(macro.name, btn);
-                macrosGrid.appendChild(btn);
+                // Toujours ajouter la macro dans la liste complète
+                allMacrosGrid.appendChild(createMacroElement(macro));
+                
+                // Ajouter aux favoris s'il y a lieu
+                if(macro.isFavorite) {
+                    favoritesGrid.appendChild(createMacroElement(macro));
+                    favoritesCount++;
+                }
             });
+            
+            if(favoritesCount === 0) {
+                noFavoritesMsg.style.display = 'block';
+            } else {
+                noFavoritesMsg.style.display = 'none';
+            }
         }
 
         // Edit Macro (Load into form)
@@ -616,10 +1007,14 @@
                 editMacroIdInput.value = macroToEdit.id;
                 inputBtnLabel.value = macroToEdit.label;
                 inputMacroName.value = macroToEdit.name;
+                inputIsFavorite.checked = !!macroToEdit.isFavorite;
                 
                 // Change UI of the Add button to show it's editing
                 submitBtn.innerHTML = '💾 Enregistrer la modif.';
                 submitBtn.style.background = 'linear-gradient(135deg, var(--success), #00b35c)';
+                
+                // Ouvre l'accordéon si on clique sur edit depuis les favoris
+                document.getElementById('allMacrosDetails').setAttribute('open', '');
                 
                 inputBtnLabel.focus();
             }
@@ -631,19 +1026,30 @@
             const label = inputBtnLabel.value.trim();
             const name = inputMacroName.value.trim();
             const editingId = editMacroIdInput.value;
+            let isFav = inputIsFavorite.checked;
 
             if (label && name) {
+                const currentFavCount = macros.filter(m => m.isFavorite && m.id != editingId).length;
+                
+                // Vérification stricte limite 3
+                if (isFav && currentFavCount >= 3) {
+                    showNotification('Impossible de définir comme favori (limite de 3 atteinte). Oubli forcé du statut favori.', 'danger');
+                    isFav = false; // On force à false mais on continue l'ajout/sauvegarde
+                    inputIsFavorite.checked = false;
+                }
+
                 if (editingId) {
                     // Update existing
                     const index = macros.findIndex(m => m.id == editingId);
                     if (index !== -1) {
                         macros[index].label = label;
                         macros[index].name = name;
+                        macros[index].isFavorite = isFav;
                         showNotification('Bouton modifié avec succès !', 'success');
                     }
                 } else {
                     // Add new
-                    macros.push({ id: Date.now(), label, name });
+                    macros.push({ id: Date.now(), label, name, isFavorite: isFav });
                     showNotification('Nouveau bouton ajouté !', 'success');
                 }
                 
@@ -677,7 +1083,7 @@
             }
         }
         
-        // Exporter
+        // Exporter Macros
         function exportMacros() {
             if (macros.length === 0) {
                 showNotification('Aucune macro à exporter.', 'danger');
@@ -695,7 +1101,7 @@
             showNotification('Fichier téléchargé avec succès !', 'success');
         }
 
-        // Importer
+        // Importer Macros
         function importMacros(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -706,24 +1112,29 @@
                     const imported = JSON.parse(e.target.result);
                     
                     if (Array.isArray(imported)) {
+                        // Anti-inversion : Vérifier s'il s'agit bien de macros (présence de name mais pas de deviceId)
+                        if (imported.length > 0 && (imported[0].hasOwnProperty('deviceId') || !imported[0].hasOwnProperty('name'))) {
+                            showNotification('Erreur : Fichier incompatible (Ce n\'est pas un fichier Boutons).', 'danger');
+                            return;
+                        }
+                        
                         macros = imported;
                         localStorage.setItem('md_macros', JSON.stringify(macros));
                         renderMacros();
                         
                         // Animation visuelle de la grille
-                        macrosGrid.classList.remove('flash');
-                        void macrosGrid.offsetWidth; // Force reflow
-                        macrosGrid.classList.add('flash');
+                        allMacrosGrid.classList.remove('flash');
+                        void allMacrosGrid.offsetWidth; // Force reflow
+                        allMacrosGrid.classList.add('flash');
                         
                         showNotification(`Succès : ${imported.length} boutons importés !`, 'success');
                     } else {
-                        showNotification('Format de fichier invalide.', 'danger');
+                        showNotification('Structure du fichier invalide.', 'danger');
                     }
                 } catch(err) {
                     showNotification('Erreur de lecture du fichier.', 'danger');
                 }
-                
-                event.target.value = '';
+                event.target.value = ''; // Reset input
             };
             reader.readAsText(file);
         }
@@ -740,7 +1151,15 @@
         }
 
         // Initialization
+        renderDevices();
         renderMacros();
+        
+        // Cacher l'accordéon par défaut s'il y a déjà des appareils, le laisser ouvert si la liste est vide
+        if (devices.length > 0) {
+            devicesDetails.removeAttribute('open');
+        } else {
+            devicesDetails.setAttribute('open', '');
+        }
         
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {

@@ -1,5 +1,5 @@
-# MacroDroid Web Remote
-**Version 1.0.0** — Créé par Yves Balestra ([yves.balestra@gmail.com](mailto:yves.balestra@gmail.com))
+# 📱 MacroDroid Web Remote
+**Version 2.2.1 (Gestion des Favoris et Hotfix Import)** — Créé par Yves Balestra ([yves.balestra@gmail.com](mailto:yves.balestra@gmail.com))
 
 Une interface web simple, élégante et autonome pour déclencher vos macros [MacroDroid](https://macrodroidforum.com/) depuis n'importe quel navigateur web (sur PC, Mac ou tablette). 
 
@@ -9,11 +9,18 @@ Une interface web simple, élégante et autonome pour déclencher vos macros [Ma
 
 *   **100% Client-Side** : Aucune donnée n'est envoyée sur un quelconque serveur (en dehors de MacroDroid). Et l'application fonctionne comme un fichier local `.html`.
 *   **Design Moderne & PWA** : Thème sombre, effets "Glassmorphism", installable directement sur l'écran d'accueil comme une vraie application.
-*   **Persistence Automatique** : Votre Device ID et vos raccourcis sauvegardés dans le stockage local du navigateur.
+*   **Persistence Automatique** : Vos téléphones et vos raccourcis sont sauvegardés dans le stockage local du navigateur.
 *   **Envoi Silencieux & Feedback Visuel** : La macro se lance sans ouvrir de nouvel onglet ni changer de page. Le bouton émet une pulsation lumineuse pour confirmer l'envoi du signal.
 *   **Mode Édition Intégré** : Modifiez instantanément le nom ou le déclencheur d'un bouton existant en cliquant sur l'icône "Crayon" ✏️, sans avoir à le recréer à zéro.
-*   **Aide Intégrée** : Des infobulles claires pour guider les nouveaux utilisateurs sur les subtilités des déclencheurs Webhook de MacroDroid.
-*   **Sauvegarde et Restauration** : Exportez/Importez en un clic vos boutons configurés. Une notification et un "flash" vert confirment la bonne restauration. L'identifiant de l'appareil (`Device ID`) n'est **jamais** inclus dans ce fichier pour garantir une sécurité totale.
+*   **Gestion Multi-Appareils (Nouveau V2.0)** : Ajoutez plusieurs téléphones (ex: le vôtre, celui de votre famille). Cochez ceux que vous souhaitez viser, et un simple clic sur un bouton enverra le signal à tous les téléphones sélectionnés !
+*   **Système de Favoris (Nouveau V2.2)** : Mettez en avant vos 3 macros les plus utilisées (⭐) pour un accès ultra-rapide et aéré. Les autres macros restent disponibles (☆) dans un espace rétractable pour ne pas encombrer l'écran.
+*   **Aide Intégrée** : Des infobulles claires pour guider les nouveaux utilisateurs sur les subtilités des déclencheurs Webhook de MacroDroid et la logique d'utilisation.
+*   **Sauvegarde et Restauration des Macros** : Exportez/Importez en un clic vos boutons configurés. L'identifiant secret de vos téléphones n'y est **pas** inclus.
+*   **Sauvegarde des Téléphones (Alerte Sécurité)** : Importez/Exportez votre liste d'appareils via un fichier dédié (`macrodroid_telephones_sauvegarde.json`). 
+
+> 🔴 **ATTENTION : SÉCURITÉ CONCERNANT L'EXPORT DES APPAREILS**
+> Le fichier d'export contenant votre flotte d'appareils inclut vos **Device IDs secrets**. Toute personne possédant ce fichier et devinant le nom de vos macros pourrait déclencher vos téléphones à distance. **Gardez ce fichier en lieu sûr (clé USB, dossier privé) et ne le partagez jamais sur le cloud ou sur GitHub.**
+> *Astuce sécurité additionnelle : Donnez des noms complexes à vos macros Webhook.*
 
 ---
 
